@@ -1,0 +1,16 @@
+{
+  "name": "infoxchange-ucarp",
+  "version": "0.1.0",
+  "author": "infoxchange",
+  "summary": "Manages installation and configuration of ucarp and interfaces",
+  "license": "Apache-2.0",
+  "source": "https://github.com/infoxchange/puppet-ucarp.git",
+  "project_page": "https://github.com/infoxchange/puppet-ucarp",
+  "issues_url": "https://github.com/infoxchange/puppet-ucarp/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+    {"name":"thias/puppet-sysctl","version_requirement":">= 1.0.6"}
+  ],
+  "data_provider": null
+}
+
