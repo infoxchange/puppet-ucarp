@@ -1,7 +1,9 @@
-# Class: ucarp
+#
+# Class: ucarp::vip
 # ===========================
 #
-# This class manages installation of ucarp, and related configuration.
+# This class manages configuration of a ucarp 'vip' instance, and installs systemd configuration
+# for that service.
 #
 # Supported OS:
 # - CentOS 7.x
@@ -21,32 +23,22 @@
 # * `vip_ip_address`
 #   Virtual IP address. Required.
 #
-# * `app_password`
-#   VIP password.  Generated if not supplied.
-#
 # * `node_id`
 #   Number betwen 001 and 255, used to generate VIP configuration in `/etc/ucarp/vip-<node_id>.conf`.
 #   If an existing number is provided, this configuration will be overwritten.  Defaults to `001`.
+#
+# * `host_ip_address`
+#   The real IP address of this host.  Defaults to facter value for `$::ipaddress`.
+#
+# * `app_password`
+#   VIP password.  Generated if not supplied.
 #
 # * `master_host`
 #   Name of the master host.  Should be fqdn. If not specified, the master host will be deemed
 #   to be the first host listed in `cluster_nodes`. Optional.
 #
-# * `host_ip_address`
-#   The real IP address of this host.  Defaults to facter value for `$::ipaddress`.
-#
 # * `network_interface`
 #   Network interface to use.  Default is `eth0`.
-#
-# * `manage_package`
-#   Should this module manage installation of the package.  Default `true`
-#
-# * `package_ensure`
-#   If package is managed, ensure status.  Defaults to `present`.
-#
-# * `package_name`
-#   Name of the package providing ucarp service. Defaults to `ucarp`.
-#
 #
 # Examples
 # --------
@@ -121,25 +113,49 @@
 #
 # Copyright 2016 Infoxchange
 #
-class ucarp (
-  $cluster_name      = undef,
-  $cluster_nodes     = undef,
-  $vip_ip_address    = undef,
-  $app_password      = undef,
-  $master_host       = undef,
-  $node_id           = $ucarp::params::node_id,
-  $host_ip_address   = $ucarp::params::host_ip_address,
-  $network_interface = $ucarp::params::network_interface,
-  $manage_package    = $ucarp::params::manage_package,
-  $package_ensure    = $ucarp::params::package_ensure,
-  $package_name      = $ucarp::params::package_name,
-) inherits ucarp::params {
+define ucarp::vip (
+  $cluster_name      = $ucarp::cluster_name,
+  $cluster_nodes     = $ucarp::cluster_nodes,
+  $vip_ip_address    = $ucarp::vip_ip_address,
+  $node_id           = $ucarp::node_id,
+  $host_ip_address   = $ucarp::host_ip_address,
+  $app_password      = $ucarp::app_password,
+  $master_host       = $ucarp::master_host,
+  $network_interface = $ucarp::network_interface,
+) {
 
-  anchor {'ucarp::start': } ->
-  class { 'ucarp::install': } ->
-  class { 'ucarp::config': } ->
-  class { 'ucarp::service': } ->
-  anchor {'ucarp::end': }
+  include ::ucarp
+
+  validate_array($cluster_nodes)
+  validate_ip_address($vip_ip_address)
+
+  if $node_id == undef or empty($node_id) {
+    fail('Node ID is expected')
+  }
+
+  validate_ip_address($host_ip_address)
+
+  if $network_interface == undef or empty($network_interface) {
+    fail('Network Interface is expected')
+  }
+
+  $real_cluster_name = pick($cluster_name, $name)
+  $real_app_password =  pick($app_password, get_app_password($real_cluster_name))
+  $is_master = pick($master_host, is_node_master($real_cluster_name, $cluster_nodes, $master_host))
+
+  # Uses vars:
+  # - node_id
+  # - vip_ip_address
+  # - real_app_password
+  # - network_interface
+  # - host_ip_address
+  # - is_master
+  file { "/etc/ucarp/vip-${node_id}":
+    ensure  => present,
+    content => template('ucarp/vip-XXX.conf.erb'),
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0400',
+  }
 
 }
-

@@ -1,0 +1,9 @@
+#!/bin/sh
+# File managed by puppet
+/sbin/ifdown $1:ucarp:$3
+
+# Run post-CARP change triggers
+for file in /etc/network/ucarp-triggers.d/*
+do
+  $file |logger -t ucarp-trigger
+done

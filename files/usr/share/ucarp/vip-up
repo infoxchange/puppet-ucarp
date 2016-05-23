@@ -1,0 +1,32 @@
+#!/bin/sh
+#File managed by puppet
+
+/bin/sleep 2 #Maybe needed for main if to come up
+/sbin/ifconfig $1:ucarp:$3|grep "inet addr" > /dev/null
+ifhasip=$?
+maxtries=10
+while [ $ifhasip -ne 0 ]; do
+	/sbin/ifdown $1:ucarp:$3
+	/sbin/ifup $1:ucarp:$3
+	sleep 1
+	/sbin/ifconfig $1:ucarp:$3|grep "inet addr" > /dev/null
+	ifhasip=$?
+	let maxtries-=1
+	if [ $maxtries -lt 1 ]; then
+		ifhasip=2
+	fi
+done
+
+# Set default src ip to baseif so you don't end up with weird packet routing via carp interfaces
+#example: ip r r 192.168.210.0/23 dev eth0 src 192.168.210.32
+netsrc=`/sbin/ip r|grep $1|grep src|awk '{print $1}'`
+baseifip=`/sbin/ifconfig $1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+/sbin/ip r r $netsrc dev $1 src $baseifip
+
+# Run post-CARP change triggers
+for file in /etc/network/ucarp-triggers.d/*
+do
+  $file |logger -t ucarp-trigger
+done
+
+exit 0
