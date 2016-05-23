@@ -17,11 +17,11 @@
 #
 # Run 'ucarp --help' for additional options
 
-ID="<%= @node_id %>
-VIP_ADDRESS="<%= @vip_ip_address %>"
+ID="<%= @_node_id %>
+VIP_ADDRESS="<%= @_vip_ip_address %>"
 PASSWORD="<%= @real_app_password %>"
-BIND_INTERFACE="<%= @network_interface %>"
-SOURCE_ADDRESS="<%= @host_ip_address %>"
+BIND_INTERFACE="<%= @_network_interface %>"
+SOURCE_ADDRESS="<%= @_host_ip_address %>"
 
 <% if @is_master -%>
 OPTIONS="--shutdown --preempt --advskew=10"

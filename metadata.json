@@ -17,7 +17,7 @@
     "operatingsystemrelease":[ "7.0" ]
     }
   ],
-  "data_provider": "hiera"
+  "data_provider": null
 }
 
 

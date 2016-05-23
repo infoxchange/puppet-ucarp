@@ -1,6 +1,16 @@
 require 'spec_helper'
 
 vip_config_file_001 = '/etc/ucarp/vip-001.conf'
+vip_config_file_002 = '/etc/ucarp/vip-002.conf'
+vip_config_file_003 = '/etc/ucarp/vip-003.conf'
+
+describe "ucarp::init" do
+  let(:title) { 'ucarp_init' }
+
+  it { should create_class('ucarp::install')}
+  it { should create_class('ucarp::config')}
+  it { should create_class('ucarp::service')}
+end
 
 describe 'ucarp::vip', :type => :define do
 
@@ -51,15 +61,16 @@ describe 'ucarp::vip', :type => :define do
     let(:cluster_name) { 'my_cluster' }
     let(:node_id) { '003' }
     let(:host_ip_address) { '192.168.100.100' }
+    let(:vip_ip_address) { '192.168.100.200' }
     let(:app_password) {}
-    let(:master_host) {} default: undef
-    let(:network_interface) {} default: eth0
+    let(:master_host) { 'nginx-02.example.com' }
+    let(:network_interface) { 'eth1' }
 
-    it { is_expected.to contain_file(vip_config_file_001).with_content /^ID="001"$/ }
-    it { is_expected.to contain_file(vip_config_file_001).with_content /^VIP_ADDRESS="192.168.1.1"$/ }
-    it { is_expected.to contain_file(vip_config_file_001).with_content /^BIND_INTERFACE="eth0"$/ }
-    it { is_expected.to contain_file(vip_config_file_001).with_content /^SOURCE_ADDRESS="192.168.10.20"$/ }
-    it { is_expected.to contain_file(vip_config_file_001).with_content /^OPTIONS="--shutdown --preempt --advskew=10"$/ }
+    it { is_expected.to contain_file(vip_config_file_003).with_content /^ID="003"$/ }
+    it { is_expected.to contain_file(vip_config_file_003).with_content /^VIP_ADDRESS="192.168.100.200"$/ }
+    it { is_expected.to contain_file(vip_config_file_003).with_content /^BIND_INTERFACE="eth1"$/ }
+    it { is_expected.to contain_file(vip_config_file_003).with_content /^SOURCE_ADDRESS="192.168.100.100"$/ }
+    it { is_expected.to contain_file(vip_config_file_003).with_content /^OPTIONS="--shutdown --preempt --advskew=10"$/ }
 
   end
 

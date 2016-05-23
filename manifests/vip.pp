@@ -114,41 +114,47 @@
 # Copyright 2016 Infoxchange
 #
 define ucarp::vip (
-  $cluster_name      = $ucarp::cluster_name,
-  $cluster_nodes     = $ucarp::cluster_nodes,
-  $vip_ip_address    = $ucarp::vip_ip_address,
-  $node_id           = $ucarp::node_id,
-  $host_ip_address   = $ucarp::host_ip_address,
-  $app_password      = $ucarp::app_password,
-  $master_host       = $ucarp::master_host,
-  $network_interface = $ucarp::network_interface,
+  $cluster_name      = undef,
+  $cluster_nodes     = undef,
+  $vip_ip_address    = undef,
+  $node_id           = undef,
+  $host_ip_address   = undef,
+  $app_password      = undef,
+  $master_host       = undef,
+  $network_interface = undef,
 ) {
 
   include ::ucarp
 
-  validate_array($cluster_nodes)
-  validate_ip_address($vip_ip_address)
+  $_node_id           = pick($node_id, $ucarp::node_id)
+  $_host_ip_address   = pick($host_ip_address, $ucarp::host_ip_address)
+  $_app_password      = pick($app_password, $ucarp::app_password)
+  $_master_host       = pick($master_host, $ucarp::master_host)
+  $_network_interface = pick($network_interface, $ucarp::network_interface)
 
-  if $node_id == undef or empty($node_id) {
+  validate_array($_cluster_nodes)
+  validate_ip_address($_vip_ip_address)
+
+  if $_node_id == undef or empty($_node_id) {
     fail('Node ID is expected')
   }
 
-  validate_ip_address($host_ip_address)
+  validate_ip_address($_host_ip_address)
 
-  if $network_interface == undef or empty($network_interface) {
+  if $_network_interface == undef or empty($_network_interface) {
     fail('Network Interface is expected')
   }
 
-  $real_cluster_name = pick($cluster_name, $name)
-  $real_app_password =  pick($app_password, get_app_password($real_cluster_name))
-  $is_master = pick($master_host, is_node_master($real_cluster_name, $cluster_nodes, $master_host))
+  $real_cluster_name = pick($_cluster_name, $name)
+  $real_app_password =  pick($_app_password, get_app_password($real_cluster_name))
+  $is_master = pick($_master_host, is_node_master($real_cluster_name, $_cluster_nodes, $_master_host))
 
   # Uses vars:
-  # - node_id
-  # - vip_ip_address
+  # - _node_id
+  # - _vip_ip_address
   # - real_app_password
-  # - network_interface
-  # - host_ip_address
+  # - _network_interface
+  # - _host_ip_address
   # - is_master
   file { "/etc/ucarp/vip-${node_id}":
     ensure  => present,
