@@ -3,81 +3,153 @@
 #### Table of Contents
 
 1. [Description](#description)
-1. [Setup - The basics of getting started with ucarp](#setup)
-    * [What ucarp affects](#what-ucarp-affects)
-    * [Setup requirements](#setup-requirements)
-    * [Beginning with ucarp](#beginning-with-ucarp)
-1. [Usage - Configuration options and additional functionality](#usage)
-1. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
+1. [Usage](#usage)
+1. [Reference](#reference)
 1. [Limitations - OS compatibility, etc.](#limitations)
 1. [Development - Guide for contributing to the module](#development)
 
 ## Description
 
-Start with a one- or two-sentence summary of what the module does and/or what
-problem it solves. This is your 30-second elevator pitch for your module.
-Consider including OS/Puppet version it works with.
+This module configures the network interface to start up on a virtual IP, and
+optionally, manages installation of ucarp.  Multiple ucarp instances on the same host are also supported.
 
-You can give more descriptive information in a second paragraph. This paragraph
-should answer the questions: "What does this module *do*?" and "Why would I use
-it?" If your module has a range of functionality (installation, configuration,
-management, etc.), this is the time to mention it.
+It installs the `ucarp` package and creates a configuration file in `/etc/ucarp/vip-*.conf` for each
+ucarp instance required.
 
-## Setup
+Supported/tested versions:
+OS: CentOS 7.x
+Puppet: 4.x
 
-### What ucarp affects **OPTIONAL**
+### More about UCARP
 
-If it's obvious what your module touches, you can skip this section. For
-example, folks can probably figure out that your mysql_instance module affects
-their MySQL instances.
+UCARP allows a couple of hosts to share common virtual IP addresses in order
+to provide automatic failover. It is a portable userland implementation of the
+secure and patent-free Common Address Redundancy Protocol (CARP, OpenBSD’s
+alternative to the patents-bloated VRRP).
 
-If there's more that they should know about, though, this is the place to mention:
+For more information on UCARP: https://download.pureftpd.org/ucarp/README
 
-* A list of files, packages, services, or operations that the module will alter,
-  impact, or execute.
-* Dependencies that your module automatically installs.
-* Warnings or other important notices.
-
-### Setup Requirements **OPTIONAL**
-
-If your module requires anything extra before setting up (pluginsync enabled,
-etc.), mention it here.
-
-If your most recent release breaks compatibility or requires particular steps
-for upgrading, you might want to include an additional "Upgrading" section
-here.
-
-### Beginning with ucarp
-
-The very basic steps needed for a user to get the module up and running. This
-can include setup steps, if necessary, or it can be an example of the most
-basic use of the module.
 
 ## Usage
 
-This section is where you describe how to customize, configure, and do the
-fancy stuff with your module here. It's especially helpful if you include usage
-examples and code samples for doing things with your module.
+To get started, this example shows how to install the ucarp service and create
+configuration for a 2-node 'cluster'.  This resource definition would be created
+on each node in the cluster.
+
+```
+  ucarp::vip { 'nginx_cluster':
+    cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+    vip_ip_address => '192.168.1.1',
+  }
+```
+
+By default, the first node in the list will be designated the master, or primary node.
+To set a different master, override with setting `master_host`.
+
+```
+  ucarp::vip { 'nginx_cluster':
+    cluster_name   => 'nginx_cluster',
+    cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+    vip_ip_address => '192.168.1.1',
+    node_id        => '001',
+    master_host    => 'nginx-02.example.com',
+  }
+
+```
+
+
+Simple definition, for 2 nodes with overrides.
+
+```
+  class { 'ucarp':
+    manage_package    => false,
+    cluster_name      => 'my_nginx_cluster',
+    app_password      => 'somepassword',
+    network_interface => 'eth1',
+  }
+
+  ucarp::vip { 'nginx_cluster':
+    cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+    vip_ip_address => '192.168.1.1',
+    node_id        => '001',
+  }
+
+```
+
+
+Slightly more complex definition, for 2 nodes, with multiple ucarp instances with
+different `vip_ip_address` and `node_id`.  If an existing `node_id` is entered,
+the configuration will be overwritten.
+
+```
+  ucarp::vip { 'nginx_cluster-01':
+    cluster_name   => 'dev_nginx_cluster',
+    cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+    vip_ip_address => '192.168.1.1',
+    node_id        => '001',
+  }
+
+  ucarp::vip { 'nginx_cluster-02':
+    cluster_name   => 'uat_nginx_cluster',
+    cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+    vip_ip_address => '192.168.1.2',
+    node_id        => '002',
+  }
+
+  ucarp::vip { 'nginx_cluster-03':
+    cluster_name   => 'prod_nginx_cluster',
+    cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+    vip_ip_address => '192.168.1.3',
+    node_id        => '003',
+  }
+
+```
 
 ## Reference
 
-Here, include a complete list of your module's classes, types, providers,
-facts, along with the parameters for each. Users refer to this section (thus
-the name "Reference") to find specific details; most users don't read it per
-se.
+*ucarp::vip*
+
+Definition to manage ucarp vip configuration files.
+
+* ensure (property) - Defaults to `present`.  If `absent`, only configuration for the
+  specific `node_id` will be removed.
+
+* cluster_name (parameter) - VIP or cluster name for use in calculating MD5 hashes,
+  especially when multiple instances are running on a single host.  Also used to
+  generate passwords if one not specified.  Defaults to `$name` for this resource.
+
+* cluster_nodes (parameter) - List of hostnames (FQDN) that will utilise this ucarp configuration.
+ Assumption is that the first node in the list is the master, unless otherwise stated. Required.
+
+* vip_ip_address (parameter) - Virtual IP address. Required.
+
+* node_id (parameter) - Number betwen 001 and 255, used to generate VIP configuration in
+  `/etc/ucarp/vip-<node_id>.conf`.  If an existing number is provided, this configuration
+  will be overwritten.  Defaults to `001`.
+
+* host_ip_address (parameter) - The real IP address of this host.  Defaults to facter
+  value for `$::ipaddress`.
+
+* app_password (parameter) - VIP password.  Generated if not supplied.
+
+* master_host (parameter) - Name of the master host.  Should be fqdn. If not specified,
+  the master host will be deemed to be the first host listed in `cluster_nodes`. Optional.
+
+* network_interface (parameter) - Network interface to use.  Default is `eth0`.
+
 
 ## Limitations
 
-This is where you list OS compatibility, version compatibility, etc. If there
-are Known Issues, you might want to include them under their own heading here.
+This module is compatible with Puppet versions >= 4.x, and has only been tested with
+CentOS versions >= 7.2.x
 
 ## Development
 
-Since your module is awesome, other users will want to play with it. Let them
-know what the ground rules for contributing are.
+Any contributions and updates welcome.  Please create a PR with your changes,
+and ensure that tests and coverage have been updated/maintained with your code.
+Tests must pass before any PR will be accepted. Code coverage must be maintained
+at 100%.
 
-## Release Notes/Contributors/Etc. **Optional**
+Alternatively, please log an issue/feature request.
 
-If you aren't using changelog, put your release notes here (though you should
-consider using changelog). You can also add any additional sections you feel
-are necessary or important to include here. Please use the `## ` header.
+

@@ -114,6 +114,7 @@
 # Copyright 2016 Infoxchange
 #
 define ucarp::vip (
+  $ensure            = present,
   $cluster_name      = undef,
   $cluster_nodes     = undef,
   $vip_ip_address    = undef,
@@ -126,38 +127,41 @@ define ucarp::vip (
 
   include ::ucarp
 
-  $_node_id           = pick($node_id, $ucarp::node_id)
-  $_host_ip_address   = pick($host_ip_address, $ucarp::host_ip_address)
-  $_app_password      = pick($app_password, $ucarp::app_password)
-  $_master_host       = pick($master_host, $ucarp::master_host)
-  $_network_interface = pick($network_interface, $ucarp::network_interface)
+  $real_cluster_name      = pick($cluster_name, $name)
+  $real_node_id           = pick($node_id, $ucarp::node_id)
+  $real_host_ip_address   = pick($host_ip_address, $ucarp::host_ip_address)
+  $real_app_password      = pick($app_password, get_app_password($real_cluster_name))
+  $real_master_host       = pick_default($master_host, $ucarp::master_host)
+  $real_network_interface = pick($network_interface, $ucarp::network_interface)
 
-  validate_array($_cluster_nodes)
-  validate_ip_address($_vip_ip_address)
-
-  if $_node_id == undef or empty($_node_id) {
-    fail('Node ID is expected')
+  validate_re($ensure, '^present$|^absent$', 'Invalid value for ensure')
+  if $cluster_nodes == undef or empty($cluster_nodes) {
+    fail('Cluster Nodes is expected.')
+  }
+  validate_array($cluster_nodes)
+  if !member($cluster_nodes, $::fqdn) {
+    fail('Current node must be included within the nodelist.  Value must be FQDN.')
   }
 
-  validate_ip_address($_host_ip_address)
-
-  if $_network_interface == undef or empty($_network_interface) {
-    fail('Network Interface is expected')
+  if $vip_ip_address == undef or empty($vip_ip_address) {
+    fail('VIP IP Address is expected.')
   }
+  validate_ip_address($vip_ip_address)
+  validate_re($real_node_id, '^\d\d\d$', 'Invalid value for Node ID.  Must be a value from "000" to "255"')
 
-  $real_cluster_name = pick($_cluster_name, $name)
-  $real_app_password =  pick($_app_password, get_app_password($real_cluster_name))
-  $is_master = pick($_master_host, is_node_master($real_cluster_name, $_cluster_nodes, $_master_host))
+  validate_ip_address($real_host_ip_address)
+
+  $is_master = pick($master_host, is_node_master($real_cluster_name, $cluster_nodes, $real_master_host))
 
   # Uses vars:
-  # - _node_id
-  # - _vip_ip_address
+  # - real_node_id
+  # - vip_ip_address
   # - real_app_password
-  # - _network_interface
-  # - _host_ip_address
+  # - real_network_interface
+  # - real_host_ip_address
   # - is_master
-  file { "/etc/ucarp/vip-${node_id}":
-    ensure  => present,
+  file { "/etc/ucarp/vip-${node_id}.conf":
+    ensure  => $ensure,
     content => template('ucarp/vip-XXX.conf.erb'),
     owner   => 'root',
     group   => 'root',

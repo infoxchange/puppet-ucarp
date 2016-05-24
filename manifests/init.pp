@@ -55,19 +55,16 @@
 #
 # # @example
 # ucarp::vip { 'nginx_cluster':
-#  cluster_name   => 'nginx_cluster',
 #  cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
 #  vip_ip_address => '192.168.1.1',
-#  node_id        => '001',
 # }
 #
 # @example
 # Simple definition, for 2 nodes with a specific master
 # ucarp::vip { 'nginx_cluster':
-#  cluster_name   => 'nginx_cluster',
+#  cluster_name   => 'my_nginx_cluster',
 #  cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
 #  vip_ip_address => '192.168.1.1',
-#  node_id        => '001',
 #  master_host    => 'nginx-02.example.com',
 # }
 #
@@ -82,7 +79,6 @@
 #  cluster_name   => 'nginx_cluster',
 #  cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
 #  vip_ip_address => '192.168.1.1',
-#  node_id        => '001',
 # }
 #
 #
