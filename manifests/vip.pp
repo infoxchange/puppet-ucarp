@@ -155,7 +155,7 @@ define ucarp::vip (
 
   validate_ip_address($real_host_ip_address)
 
-  $is_master = pick($master_host, is_node_master($real_cluster_name, $cluster_nodes, $real_master_host))
+  $is_master = pick($real_master_host, is_node_master($real_cluster_name, $cluster_nodes, $real_master_host))
 
   # Uses vars:
   # - real_node_id
