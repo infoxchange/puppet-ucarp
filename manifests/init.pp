@@ -29,8 +29,8 @@
 #   If an existing number is provided, this configuration will be overwritten. Defaults to '001'.
 #
 # * `master_host`
-#   Name of the master host.  Should be fqdn. If not specified, the master host will be deemed
-#   to be the first host listed in `cluster_nodes`. Optional.
+#   Name of the master host.  Should be fqdn. If not specified, the master host will be
+#   randomly assigned.  Optional.
 #
 # * `host_ip_address`
 #   The real IP address of this host.  Defaults to facter value for `$::ipaddress`.

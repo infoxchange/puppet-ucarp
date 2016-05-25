@@ -34,8 +34,8 @@
 #   VIP password.  Generated if not supplied.
 #
 # * `master_host`
-#   Name of the master host.  Should be fqdn. If not specified, the master host will be deemed
-#   to be the first host listed in `cluster_nodes`. Optional.
+#   Name of the master host.  Should be fqdn. If not specified, the master host will be
+#   randomly assigned.  Optional.
 #
 # * `network_interface`
 #   Network interface to use.  Default is `eth0`.

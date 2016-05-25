@@ -43,7 +43,7 @@ on each node in the cluster.
   }
 ```
 
-By default, the first node in the list will be designated the master, or primary node.
+By default, the master will be randomly assigned.
 To set a different master, override with setting `master_host`.
 
 ```
