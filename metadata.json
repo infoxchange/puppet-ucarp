@@ -1,7 +1,7 @@
 {
   "name": "infoxchange-ucarp",
   "version": "0.1.0",
-  "author": "Infoxchange",
+  "author": "Josie Gioffre",
   "summary": "Manages installation and configuration of ucarp and interfaces",
   "license": "Apache-2.0",
   "source": "https://github.com/infoxchange/puppet-ucarp.git",
