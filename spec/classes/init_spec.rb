@@ -27,6 +27,11 @@ describe "ucarp", :type => :class do
   # INSTALL
   it { is_expected.to contain_package('ucarp').with_ensure('latest') }
 
+  it { is_expected.to contain_file('/etc/ucarp/vip-001.conf.example').with({
+      'ensure' => 'absent',
+    })
+  }
+
   # CONFIG
   it { is_expected.to contain_sysctl('net.ipv4.ip_nonlocal_bind').with_value('1') }
 
