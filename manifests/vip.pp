@@ -171,7 +171,7 @@ define ucarp::vip (
     group   => 'root',
     mode    => '0400',
     notify  => Service["ucarp@${real_node_id}"],
-  } ~>
+  }
 
   case $ensure {
     'present': {
