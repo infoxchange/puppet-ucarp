@@ -1,4 +1,4 @@
-# UCARP (WIP: not ready for public consumption)
+# UCARP
 
 #### Table of Contents
 
