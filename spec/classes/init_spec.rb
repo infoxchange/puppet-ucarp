@@ -22,7 +22,6 @@ describe "ucarp", :type => :class do
   it { should contain_anchor('ucarp::start') }
   it { should create_class('ucarp::install') }
   it { should create_class('ucarp::config') }
-  it { should create_class('ucarp::service') }
   it { should contain_anchor('ucarp::end') }
 
   # INSTALL
@@ -30,15 +29,6 @@ describe "ucarp", :type => :class do
 
   # CONFIG
   it { is_expected.to contain_sysctl('net.ipv4.ip_nonlocal_bind').with_value('1') }
-
-  # SERVICE
-  it { is_expected.to contain_service('ucarp').with(
-      'ensure'     => 'running',
-      'enable'     => 'true',
-      'hasstatus'  => 'true',
-      'hasrestart' => 'true'
-    )
-  }
 
   context 'when a package should not be managed' do
     let(:params) {

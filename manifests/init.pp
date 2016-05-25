@@ -26,7 +26,7 @@
 #
 # * `node_id`
 #   Number betwen 001 and 255, used to generate VIP configuration in `/etc/ucarp/vip-<node_id>.conf`.
-#   If an existing number is provided, this configuration will be overwritten.  Defaults to `001`.
+#   If an existing number is provided, this configuration will be overwritten. Defaults to '001'.
 #
 # * `master_host`
 #   Name of the master host.  Should be fqdn. If not specified, the master host will be deemed
@@ -55,17 +55,19 @@
 #
 # # @example
 # ucarp::vip { 'nginx_cluster':
-#  cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
-#  vip_ip_address => '192.168.1.1',
+#   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+#   vip_ip_address => '192.168.1.1',
+#   node_id        => '001',
 # }
 #
 # @example
 # Simple definition, for 2 nodes with a specific master
 # ucarp::vip { 'nginx_cluster':
-#  cluster_name   => 'my_nginx_cluster',
-#  cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
-#  vip_ip_address => '192.168.1.1',
-#  master_host    => 'nginx-02.example.com',
+#   cluster_name   => 'my_nginx_cluster',
+#   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+#   vip_ip_address => '192.168.1.1',
+#   master_host    => 'nginx-02.example.com',
+#   node_id        => '001',
 # }
 #
 #
@@ -76,33 +78,34 @@
 # }
 #
 # ucarp::vip { 'nginx_cluster':
-#  cluster_name   => 'nginx_cluster',
-#  cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
-#  vip_ip_address => '192.168.1.1',
+#   cluster_name   => 'nginx_cluster',
+#   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+#   vip_ip_address => '192.168.1.1',
+#   node_id        => '001',
 # }
 #
 #
 # @example
 # Definition, for 2 nodes, with multiple ucarp instances
 # ucarp::vip { 'nginx_cluster-01':
-#  cluster_name   => 'dev_nginx_cluster',
-#  cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
-#  vip_ip_address => '192.168.1.1',
-#  node_id        => '001',
+#   cluster_name   => 'dev_nginx_cluster',
+#   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+#   vip_ip_address => '192.168.1.1',
+#   node_id        => '001',
 # }
 #
 # ucarp::vip { 'nginx_cluster-02':
-#  cluster_name   => 'uat_nginx_cluster',
-#  cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
-#  vip_ip_address => '192.168.1.2',
-#  node_id        => '002',
+#   cluster_name   => 'uat_nginx_cluster',
+#   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+#   vip_ip_address => '192.168.1.2',
+#   node_id        => '002',
 # }
 #
 # ucarp::vip { 'nginx_cluster-03':
-#  cluster_name   => 'prod_nginx_cluster',
-#  cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
-#  vip_ip_address => '192.168.1.3',
-#  node_id        => '003',
+#   cluster_name   => 'prod_nginx_cluster',
+#   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
+#   vip_ip_address => '192.168.1.3',
+#   node_id        => '003',
 # }
 #
 #
@@ -134,7 +137,6 @@ class ucarp (
   anchor {'ucarp::start': } ->
   class { 'ucarp::install': } ->
   class { 'ucarp::config': } ->
-  class { 'ucarp::service': } ->
   anchor {'ucarp::end': }
 
 }

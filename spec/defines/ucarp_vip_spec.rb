@@ -51,6 +51,14 @@ describe 'ucarp::vip', :type => :define do
     })
   }
 
+  it { is_expected.to contain_service('ucarp@001').with(
+      'ensure'     => 'running',
+      'enable'     => 'true',
+      'hasstatus'  => 'true',
+      'hasrestart' => 'true'
+    )
+  }
+
 
   context 'when passing in minimum required parameters' do
 
@@ -85,6 +93,14 @@ describe 'ucarp::vip', :type => :define do
     it { is_expected.to contain_file(vip_config_file_003).with_content /^SOURCE_ADDRESS="192.168.100.100"$/ }
     it { is_expected.to contain_file(vip_config_file_003).with_content /^OPTIONS="--shutdown --preempt --advskew=10"$/ }
 
+    it { is_expected.to contain_service('ucarp@003').with(
+        'ensure'     => 'running',
+        'enable'     => 'true',
+        'hasstatus'  => 'true',
+        'hasrestart' => 'true'
+      )
+    }
+
   end
 
   context 'when ensure is absent' do
@@ -97,6 +113,15 @@ describe 'ucarp::vip', :type => :define do
       }
     }
     it { is_expected.to contain_file(vip_config_file_001).with_ensure('absent') }
+
+    it { is_expected.to contain_service('ucarp@001').with(
+        'ensure'     => 'stopped',
+        'enable'     => 'false',
+        'hasstatus'  => 'true',
+        'hasrestart' => 'true'
+      )
+    }
+
   end
 
   context 'when current node is not present in cluster_nodes' do
@@ -117,6 +142,18 @@ describe 'ucarp::vip', :type => :define do
     } }
     it {is_expected.to raise_error(Puppet::Error, /Current node must be included within the nodelist.  Value must be FQDN./) }
   end
+
+#  context 'when node_id is missing' do
+#    let(:params) {
+#      {
+#      :ensure         => 'present',
+#      :cluster_nodes  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
+#      :vip_ip_address => '192.168.1.1',
+#      :node_id        => :undef,
+#      }
+#    }
+#    it {is_expected.to raise_error(Puppet::Error, /Node ID is expected./) }
+#  end
 
   context 'when node_id is invalid' do
     let(:params) {

@@ -147,6 +147,10 @@ define ucarp::vip (
     fail('VIP IP Address is expected.')
   }
   validate_ip_address($vip_ip_address)
+
+  if $real_node_id == undef or empty($real_node_id) {
+    fail('Node ID is expected.')
+  }
   validate_re($real_node_id, '^\d\d\d$', 'Invalid value for Node ID.  Must be a value from "000" to "255"')
 
   validate_ip_address($real_host_ip_address)
@@ -160,12 +164,33 @@ define ucarp::vip (
   # - real_network_interface
   # - real_host_ip_address
   # - is_master
-  file { "/etc/ucarp/vip-${node_id}.conf":
+  file { "/etc/ucarp/vip-${real_node_id}.conf":
     ensure  => $ensure,
     content => template('ucarp/vip-XXX.conf.erb'),
     owner   => 'root',
     group   => 'root',
     mode    => '0400',
+  }
+
+  case $ensure {
+    'present': {
+      $service_ensure = 'running'
+      $service_enable = 'true'
+    }
+    'absent': {
+      $service_ensure = 'stopped'
+      $service_enable = 'false'
+    }
+    default: {
+      # do nothing
+    }
+  }
+
+  service { "ucarp@${real_node_id}":
+    ensure     => $service_ensure,
+    enable     => $service_enable,
+    hasstatus  => true,
+    hasrestart => true,
   }
 
 }
