@@ -170,7 +170,8 @@ define ucarp::vip (
     owner   => 'root',
     group   => 'root',
     mode    => '0400',
-  }
+    notify  => Service["ucarp@${real_node_id}"],
+  } ~>
 
   case $ensure {
     'present': {
@@ -186,6 +187,7 @@ define ucarp::vip (
     }
   }
 
+  # Template systemd service is added, and we can have multiple instances running.
   service { "ucarp@${real_node_id}":
     ensure     => $service_ensure,
     enable     => $service_enable,
