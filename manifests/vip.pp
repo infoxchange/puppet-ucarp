@@ -131,7 +131,6 @@ define ucarp::vip (
   $real_node_id           = pick($node_id, $ucarp::node_id)
   $real_host_ip_address   = pick($host_ip_address, $ucarp::host_ip_address)
   $real_app_password      = pick($app_password, get_app_password($real_cluster_name))
-  $real_master_host       = pick_default($master_host, $ucarp::master_host)
   $real_network_interface = pick($network_interface, $ucarp::network_interface)
 
   validate_re($ensure, '^present$|^absent$', 'Invalid value for ensure')
@@ -155,7 +154,8 @@ define ucarp::vip (
 
   validate_ip_address($real_host_ip_address)
 
-  $is_master = pick($real_master_host, is_node_master($real_cluster_name, $cluster_nodes, $real_master_host))
+  $real_master_host = pick_default($master_host, $cluster_nodes[0])
+  $is_master = is_node_master($real_cluster_name, $cluster_nodes, $real_master_host)
 
   # Uses vars:
   # - real_node_id
