@@ -91,7 +91,7 @@ describe 'ucarp::vip', :type => :define do
     it { is_expected.to contain_file(vip_config_file_003).with_content /^PASSWORD="mypassword"$/ }
     it { is_expected.to contain_file(vip_config_file_003).with_content /^BIND_INTERFACE="eth1"$/ }
     it { is_expected.to contain_file(vip_config_file_003).with_content /^SOURCE_ADDRESS="192.168.100.100"$/ }
-    it { is_expected.to contain_file(vip_config_file_003).with_content /^OPTIONS="--shutdown --preempt --advskew=10"$/ }
+    it { is_expected.to contain_file(vip_config_file_003).with_content /^OPTIONS="--shutdown --advskew=20"$/ }
 
     it { is_expected.to contain_service('ucarp@003').with(
         'ensure'     => 'running',
