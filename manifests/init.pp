@@ -24,8 +24,8 @@
 # * `app_password`
 #   VIP password.  Generated if not supplied.
 #
-# * `node_id`
-#   Number betwen 001 and 255, used to generate VIP configuration in `/etc/ucarp/vip-<node_id>.conf`.
+# * `vhid`
+#   Number betwen 001 and 255, used to generate VIP configuration in `/etc/ucarp/vip-<vhid>.conf`.
 #   If an existing number is provided, this configuration will be overwritten. Defaults to '001'.
 #
 # * `master_host`
@@ -57,7 +57,7 @@
 # ucarp::vip { 'nginx_cluster':
 #   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
 #   vip_ip_address => '192.168.1.1',
-#   node_id        => '001',
+#   vhid           => '001',
 # }
 #
 # @example
@@ -67,7 +67,7 @@
 #   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
 #   vip_ip_address => '192.168.1.1',
 #   master_host    => 'nginx-02.example.com',
-#   node_id        => '001',
+#   vhid           => '001',
 # }
 #
 #
@@ -81,7 +81,7 @@
 #   cluster_name   => 'nginx_cluster',
 #   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
 #   vip_ip_address => '192.168.1.1',
-#   node_id        => '001',
+#   vhid           => '001',
 # }
 #
 #
@@ -91,21 +91,21 @@
 #   cluster_name   => 'dev_nginx_cluster',
 #   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
 #   vip_ip_address => '192.168.1.1',
-#   node_id        => '001',
+#   vhid           => '001',
 # }
 #
 # ucarp::vip { 'nginx_cluster-02':
 #   cluster_name   => 'uat_nginx_cluster',
 #   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
 #   vip_ip_address => '192.168.1.2',
-#   node_id        => '002',
+#   vhid           => '002',
 # }
 #
 # ucarp::vip { 'nginx_cluster-03':
 #   cluster_name   => 'prod_nginx_cluster',
 #   cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
 #   vip_ip_address => '192.168.1.3',
-#   node_id        => '003',
+#   vhid           => '003',
 # }
 #
 #
@@ -126,7 +126,7 @@ class ucarp (
   $vip_ip_address    = undef,
   $app_password      = undef,
   $master_host       = undef,
-  $node_id           = $ucarp::params::node_id,
+  $vhid              = $ucarp::params::vhid,
   $host_ip_address   = $ucarp::params::host_ip_address,
   $network_interface = $ucarp::params::network_interface,
   $manage_package    = $ucarp::params::manage_package,

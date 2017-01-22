@@ -6,6 +6,40 @@ vip_config_file_003 = '/etc/ucarp/vip-003.conf'
 
 describe 'ucarp::vip', :type => :define do
 
+  # Create dummy function_query_resources()
+  let!(:mock_query_resources) {
+    Puppet::Parser::Functions.newfunction(:query_resources, :type => :rvalue, :arity => -3) { |args|
+      { 'nginx-01.example.com' => [
+          {
+            'parameters' => {
+              'cluster_nodes'  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
+              'vip_ip_address' => '192.168.10.1',
+              'vhid'           => '001',
+            },
+          },
+        ],
+        'nginx-02.example.com' => [
+          {
+            'parameters' => {
+              'cluster_nodes'  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
+              'vip_ip_address' => '192.168.10.1',
+              'vhid'           => '001',
+            },
+          },
+        ],
+        'nginx-21.example.com' => [
+          {
+            'parameters' => {
+              'cluster_nodes'  =>  ['nginx-21.example.com', 'nginx-22.example.com'],
+              'vip_ip_address' => '192.168.10.2',
+              'vhid'           => '020',
+            },
+          },
+        ],
+      }
+    }
+  }
+
   # A bit of a hack to get around the package provider default to that on OSX, where these tests are written.
   provider_class = Puppet::Type.type(:package).provider(:yum)
   before :each do
@@ -15,15 +49,16 @@ describe 'ucarp::vip', :type => :define do
   let(:title) { 'test_vip' }
   let(:params) {
     {
-    :ensure         => 'present',
-    :cluster_nodes  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
-    :vip_ip_address => '192.168.1.1',
-    :node_id        => '001',
+    :ensure            => 'present',
+    :cluster_nodes     =>  ['nginx-01.example.com', 'nginx-02.example.com'],
+    :vip_ip_address    => '192.168.10.1',
+    :vhid              => '001',
+    :network_interface => 'eth0',
     }
   }
 
   #let(:cluster_name) {} # default: $name
-  #let(:node_id) {}  # default: 001
+  #let(:vhid) {}  # default: 001
   #let(:host_ip_address) {} # default: ::ipaddress
   #let(:app_password) {} # generated if not supplied.
   #let(:master_host) {} # default: undef
@@ -34,7 +69,21 @@ describe 'ucarp::vip', :type => :define do
    :operatingsystemrelease    => '7.2',
    :operatingsystemmajrelease => '7',
    :ipaddress                 => '192.168.10.20',
-   :fqdn                      => 'nginx-01.example.com'
+   :fqdn                      => 'nginx-01.example.com',
+   :networking                => {
+          'hostname' => 'nginx-01',
+          'fqdn'     => 'nginx-01.example.com',
+          'interfaces' => {
+             'eth0' => {
+               'network' => '192.168.10.0',
+               'netmask' => '255.255.255.0',
+             },
+             'eth1' => {
+               'network' => '192.168.100.0',
+               'netmask' => '255.255.255.0',
+             },
+          },
+                                 }
   } }
 
   it { is_expected.to compile }
@@ -63,7 +112,7 @@ describe 'ucarp::vip', :type => :define do
   context 'when passing in minimum required parameters' do
 
     it { is_expected.to contain_file(vip_config_file_001).with_content /^ID="001"$/ }
-    it { is_expected.to contain_file(vip_config_file_001).with_content /^VIP_ADDRESS="192.168.1.1"$/ }
+    it { is_expected.to contain_file(vip_config_file_001).with_content /^VIP_ADDRESS="192.168.10.1"$/ }
     it { is_expected.to contain_file(vip_config_file_001).with_content /^BIND_INTERFACE="eth0"$/ }
     it { is_expected.to contain_file(vip_config_file_001).with_content /^SOURCE_ADDRESS="192.168.10.20"$/ }
     it { is_expected.to contain_file(vip_config_file_001).with_content /^OPTIONS="--shutdown --preempt --advskew=10"$/ }
@@ -77,7 +126,7 @@ describe 'ucarp::vip', :type => :define do
       :ensure            => 'present',
       :cluster_name      => 'my_cluster',
       :cluster_nodes     =>  ['nginx-01.example.com', 'nginx-02.example.com'],
-      :node_id           => '003',
+      :vhid              => '003',
       :host_ip_address   => '192.168.100.100',
       :vip_ip_address    => '192.168.100.200',
       :app_password      => 'mypassword',
@@ -109,7 +158,7 @@ describe 'ucarp::vip', :type => :define do
       :ensure         => 'absent',
       :cluster_nodes  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
       :vip_ip_address => '192.168.1.1',
-      :node_id        => '001',
+      :vhid           => '001',
       }
     }
     it { is_expected.to contain_file(vip_config_file_001).with_ensure('absent') }
@@ -130,7 +179,7 @@ describe 'ucarp::vip', :type => :define do
       :ensure         => 'absent',
       :cluster_nodes  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
       :vip_ip_address => '192.168.1.1',
-      :node_id        => '001',
+      :vhid           => '001',
       }
     }
     let(:facts) { {
@@ -143,28 +192,40 @@ describe 'ucarp::vip', :type => :define do
     it {is_expected.to raise_error(Puppet::Error, /Current node must be included within the nodelist.  Value must be FQDN./) }
   end
 
-#  context 'when node_id is missing' do
+#  context 'when vhid is missing' do
 #    let(:params) {
 #      {
 #      :ensure         => 'present',
 #      :cluster_nodes  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
 #      :vip_ip_address => '192.168.1.1',
-#      :node_id        => :undef,
+#      :vhid           => :undef,
 #      }
 #    }
-#    it {is_expected.to raise_error(Puppet::Error, /Node ID is expected./) }
+#    it {is_expected.to raise_error(Puppet::Error, /vhid is expected./) }
 #  end
 
-  context 'when node_id is invalid' do
+  context 'when vhid is invalid' do
     let(:params) {
       {
       :ensure         => 'present',
       :cluster_nodes  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
-      :vip_ip_address => '192.168.1.1',
-      :node_id        => '1234',
+      :vip_ip_address => '192.168.10.1',
+      :vhid           => '1234',
       }
     }
-    it {is_expected.to raise_error(Puppet::Error, /Invalid value for Node ID.  Must be a value from "000" to "255"/) }
+    it {is_expected.to raise_error(Puppet::Error, /Invalid value for VHID.  Must be a value from "001" to "255"/) }
+  end
+
+  context 'when vhid is out of range' do
+    let(:params) {
+      {
+      :ensure         => 'present',
+      :cluster_nodes  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
+      :vip_ip_address => '192.168.10.1',
+      :vhid           => '0277',
+      }
+    }
+    it {is_expected.to raise_error(Puppet::Error, /Invalid value for VHID.  Must be a value from "001" to "255"/) }
   end
 
   context 'when cluster_nodes is empty' do
@@ -172,8 +233,8 @@ describe 'ucarp::vip', :type => :define do
       {
       :ensure         => 'present',
       :cluster_nodes  =>  [],
-      :vip_ip_address => '192.168.1.1',
-      :node_id        => '001',
+      :vip_ip_address => '192.168.10.1',
+      :vhid           => '001',
       }
     }
     it {is_expected.to raise_error(Puppet::Error, /Cluster Nodes is expected./) }
@@ -184,8 +245,8 @@ describe 'ucarp::vip', :type => :define do
       {
       :ensure         => 'present',
       :cluster_nodes  =>  :undef,
-      :vip_ip_address => '192.168.1.1',
-      :node_id        => '001',
+      :vip_ip_address => '192.168.10.1',
+      :vhid           => '001',
       }
     }
     it {is_expected.to raise_error(Puppet::Error, /Cluster Nodes is expected./) }
@@ -196,8 +257,8 @@ describe 'ucarp::vip', :type => :define do
       {
       :ensure         => 'absent',
       :cluster_nodes  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
-      :vip_ip_address => '192.168.1.1',
-      :node_id        => '001',
+      :vip_ip_address => '192.168.10.1',
+      :vhid           => '001',
       }
     }
     let(:facts) { {
@@ -205,7 +266,7 @@ describe 'ucarp::vip', :type => :define do
      :operatingsystemrelease    => '7.2',
      :operatingsystemmajrelease => '7',
      :ipaddress                 => '192.168.10.20',
-     :fqdn                      => 'nginx-03.example.com'
+     :fqdn                      => 'nginx-03.example.com',
     } }
     it {is_expected.to raise_error(Puppet::Error, /Current node must be included within the nodelist.  Value must be FQDN./) }
   end
@@ -214,9 +275,9 @@ describe 'ucarp::vip', :type => :define do
     let(:params) {
       {
       :ensure          => 'present',
-      :cluster_nodes  =>  ['nginx-01.example.com', 'nginx-02.example.com'],
+      :cluster_nodes   =>  ['nginx-01.example.com', 'nginx-02.example.com'],
       :vip_ip_address  => '192.168.300.300',
-      :node_id         => '001',
+      :vhid            => '001',
       }
     }
     it {is_expected.to raise_error(Puppet::Error, /"192.168.300.300" is not a valid IP address/) }
@@ -229,12 +290,27 @@ describe 'ucarp::vip', :type => :define do
       :cluster_nodes   =>  ['nginx-01.example.com', 'nginx-02.example.com'],
       :vip_ip_address  => '192.168.2.2',
       :host_ip_address => '192.168.500.500',
-      :node_id         => '001',
+      :vhid            => '001',
       }
     }
     it {is_expected.to raise_error(Puppet::Error, /"192.168.500.500" is not a valid IP address/) }
   end
 
+  context 'when vhid conflicts with another cluster' do
+    let(:params) {
+      {
+      :ensure          => 'present',
+      :cluster_nodes   =>  ['nginx-01.example.com', 'nginx-02.example.com'],
+      :vip_ip_address  => '192.168.10.1',
+      :host_ip_address => '192.168.10.20',
+      :vhid            => '020',
+      }
+    }
+
+    it { is_expected.to contain_notify('ucarp_conflict_020_192.168.10.1') }
+    it { is_expected.to contain_file('/etc/ucarp/vip-020.conf') }
+    it { is_expected.to contain_service('ucarp@020') }
+  end
 
 end
 

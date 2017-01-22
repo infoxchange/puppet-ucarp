@@ -51,7 +51,7 @@ To set a different master, override with setting `master_host`.
     cluster_name   => 'nginx_cluster',
     cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
     vip_ip_address => '192.168.1.1',
-    node_id        => '001',
+    vhid           => '001',
     master_host    => 'nginx-02.example.com',
   }
 
@@ -71,14 +71,14 @@ Simple definition, for 2 nodes with overrides.
   ucarp::vip { 'nginx_cluster':
     cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
     vip_ip_address => '192.168.1.1',
-    node_id        => '001',
+    vhid           => '001',
   }
 
 ```
 
 
 Slightly more complex definition, for 2 nodes, with multiple ucarp instances with
-different `vip_ip_address` and `node_id`.  If an existing `node_id` is entered,
+different `vip_ip_address` and `vhid`.  If an existing `vhid` is entered,
 the configuration will be overwritten.
 
 ```
@@ -86,21 +86,21 @@ the configuration will be overwritten.
     cluster_name   => 'dev_nginx_cluster',
     cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
     vip_ip_address => '192.168.1.1',
-    node_id        => '001',
+    vhid           => '001',
   }
 
   ucarp::vip { 'nginx_cluster-02':
     cluster_name   => 'uat_nginx_cluster',
     cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
     vip_ip_address => '192.168.1.2',
-    node_id        => '002',
+    vhid           => '002',
   }
 
   ucarp::vip { 'nginx_cluster-03':
     cluster_name   => 'prod_nginx_cluster',
     cluster_nodes  => ['nginx-01.example.com','nginx-02.example.com'],
     vip_ip_address => '192.168.1.3',
-    node_id        => '003',
+    vhid           => '003',
   }
 
 ```
@@ -112,7 +112,7 @@ the configuration will be overwritten.
 Definition to manage ucarp vip configuration files.
 
 * ensure (property) - Defaults to `present`.  If `absent`, only configuration for the
-  specific `node_id` will be removed.
+  specific `vhid` will be removed.
 
 * cluster_name (parameter) - VIP or cluster name for use in calculating MD5 hashes,
   especially when multiple instances are running on a single host.  Also used to
@@ -123,8 +123,8 @@ Definition to manage ucarp vip configuration files.
 
 * vip_ip_address (parameter) - Virtual IP address. Required.
 
-* node_id (parameter) - Number betwen 001 and 255, used to generate VIP configuration in
-  `/etc/ucarp/vip-<node_id>.conf`.  If an existing number is provided, this configuration
+* vhid (parameter) - Number betwen 001 and 255, used to generate VIP configuration in
+  `/etc/ucarp/vip-<vhid>.conf`.  If an existing number is provided, this configuration
   will be overwritten.  Defaults to `001`.
 
 * host_ip_address (parameter) - The real IP address of this host.  Defaults to facter

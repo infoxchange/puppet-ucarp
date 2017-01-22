@@ -1,7 +1,7 @@
 {
   "name": "infoxchange-ucarp",
-  "version": "0.1.0",
-  "author": "Josie Gioffre",
+  "version": "0.2.0",
+  "author": "Josie Gioffre, George Hansper",
   "summary": "Manages installation and configuration of ucarp and interfaces",
   "license": "Apache-2.0",
   "source": "https://github.com/infoxchange/puppet-ucarp.git",
@@ -14,7 +14,7 @@
   "operatingsystem_support": [
     {
     "operatingsystem":"RedHat",
-    "operatingsystemrelease":[ "7.0" ]
+    "operatingsystemrelease":[ "7" ]
     }
   ],
   "data_provider": null
