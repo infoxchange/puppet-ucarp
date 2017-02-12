@@ -1,7 +1,7 @@
 class ucarp::params {
 
   $network_interface = 'eth0'
-  $node_id           = '001'
+  $vhid              = '001'
 
   $manage_package    = true
   $package_ensure    = 'latest'
