@@ -111,7 +111,7 @@ describe 'ucarp::vip', :type => :define do
 
   context 'when passing in minimum required parameters' do
 
-    it { is_expected.to contain_file(vip_config_file_001).with_content /^ID="001"$/ }
+    it { is_expected.to contain_file(vip_config_file_001).with_content /^ID="1"$/ }
     it { is_expected.to contain_file(vip_config_file_001).with_content /^VIP_ADDRESS="192.168.10.1"$/ }
     it { is_expected.to contain_file(vip_config_file_001).with_content /^BIND_INTERFACE="eth0"$/ }
     it { is_expected.to contain_file(vip_config_file_001).with_content /^SOURCE_ADDRESS="192.168.10.20"$/ }
@@ -135,7 +135,7 @@ describe 'ucarp::vip', :type => :define do
       }
     }
 
-    it { is_expected.to contain_file(vip_config_file_003).with_content /^ID="003"$/ }
+    it { is_expected.to contain_file(vip_config_file_003).with_content /^ID="3"$/ }
     it { is_expected.to contain_file(vip_config_file_003).with_content /^VIP_ADDRESS="192.168.100.200"$/ }
     it { is_expected.to contain_file(vip_config_file_003).with_content /^PASSWORD="mypassword"$/ }
     it { is_expected.to contain_file(vip_config_file_003).with_content /^BIND_INTERFACE="eth1"$/ }

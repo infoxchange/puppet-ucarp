@@ -17,7 +17,7 @@
 #
 # Run 'ucarp --help' for additional options
 
-ID="<%= @real_vhid %>"
+ID="<%= @real_vhid.to_i %>"
 VIP_ADDRESS="<%= @vip_ip_address %>"
 PASSWORD="<%= @real_app_password %>"
 BIND_INTERFACE="<%= @real_network_interface %>"
