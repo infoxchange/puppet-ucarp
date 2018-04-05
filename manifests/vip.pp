@@ -196,6 +196,16 @@ define ucarp::vip (
     notify  => Service["ucarp@${real_vhid}"],
   }
 
+  # Ucarp package from 1.3 (?) uses a separate passfile
+  file { "/etc/ucarp/vip-${real_vhid}.pwd":
+    ensure  => $ensure,
+    content => $real_app_password,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0400',
+    notify  => Service["ucarp@${real_vhid}"],
+  }
+
   case $ensure {
     'present': {
       $service_ensure = 'running'
