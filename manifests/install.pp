@@ -6,7 +6,7 @@ class ucarp::install inherits ucarp {
     }
   }
 
-  file { '/etc/ucarp/vip-001.conf.example':
+  file { ['/etc/ucarp/vip-001.conf.example','/etc/ucarp/vip-001.pwd.example']:
     ensure => absent,
   }
 
